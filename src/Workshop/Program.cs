@@ -18,23 +18,23 @@ namespace Workshop
 
         public static void TestGa()
         {
-            var random = new Random();
-            var individuals = new List<Individual>();
-            for (var i = 0; i < 200; i++)
-            {
-
-                var chromosomes = new BitArray(20);
-                for (var j = 0; j < 20; j++)
+            var fitnessFun = new Func<BitArray, double>(
+                b =>
                 {
-                    var bit = random.Next(100) < 50;
-                    chromosomes[j] = bit;
-                }
-                individuals.Add(new Individual(i, chromosomes));
+                    var fitness = 0.0;
+                    for (var i = 1; i < b.Length; i++)
+                    {
+                        if (b[i] == b[i - 1]) continue;
+                        fitness += 1;
+                    }
+                    return fitness;
+                });
+            var environment = new Garden(fitnessFun, 20, 20) {CrossoverRate = 0.7, MutationRate = 0.02};
+            while (environment.MaxFitness < 19)
+            {
+                environment.NextGen();
+                Console.WriteLine($"Average: {environment.AverageFitness}\tMax: {environment.MaxFitness}");
             }
-            var population = new Population(individuals);
-            var fitnessFunc = new Func<BitArray, int>(c => c.Count(b => b));
-            var selector = new Selector(population, fitnessFunc);
-            selector.RouletteWheel();
         }
 
         public static void Finished()
